@@ -2,6 +2,7 @@ package dev.geco.gsit.manager;
 
 import java.io.*;
 import java.net.*;
+import java.time.*;
 import java.util.*;
 import java.util.function.*;
 
@@ -13,9 +14,8 @@ import dev.geco.gsit.GSitMain;
 public class UManager {
 
     private final GSitMain GPM;
-
+    private LocalDate lastCheck = null;
     private String spigotVersion = null;
-
     private boolean latestVersion = true;
 
     public UManager(GSitMain GPluginMain) { GPM = GPluginMain; }
@@ -24,26 +24,34 @@ public class UManager {
         if(!GPM.getCManager().CHECK_FOR_UPDATE) return;
         checkVersion();
         if(latestVersion) return;
-        for(Player player : Bukkit.getOnlinePlayers()) if(GPM.getPManager().hasPermission(player, "Update")) GPM.getMManager().sendMessage(player, "Plugin.plugin-update", "%Name%", GPM.NAME, "%NewVersion%", spigotVersion, "%Version%", GPM.getDescription().getVersion(), "%Path%", GPM.getDescription().getWebsite());
-        GPM.getMManager().sendMessage(Bukkit.getConsoleSender(), "Plugin.plugin-update", "%Name%", GPM.NAME, "%NewVersion%", spigotVersion, "%Version%", GPM.getDescription().getVersion(), "%Path%", GPM.getDescription().getWebsite());
+        for(Player player : Bukkit.getOnlinePlayers()) if(GPM.getPManager().hasPermission(player, "Update")) GPM.getMManager().sendMessage(player, "Plugin.plugin-update", "%Name%", GSitMain.NAME, "%NewVersion%", spigotVersion, "%Version%", GPM.getDescription().getVersion(), "%Path%", GPM.getDescription().getWebsite());
+        GPM.getMManager().sendMessage(Bukkit.getConsoleSender(), "Plugin.plugin-update", "%Name%", GSitMain.NAME, "%NewVersion%", spigotVersion, "%Version%", GPM.getDescription().getVersion(), "%Path%", GPM.getDescription().getWebsite());
     }
 
-    public void loginCheckForUpdates(Player Player) { if(GPM.getCManager().CHECK_FOR_UPDATE && !latestVersion && GPM.getPManager().hasPermission(Player, "Update")) GPM.getMManager().sendMessage(Player, "Plugin.plugin-update", "%Name%", GPM.NAME, "%NewVersion%", spigotVersion, "%Version%", GPM.getDescription().getVersion(), "%Path%", GPM.getDescription().getWebsite()); }
+    public void loginCheckForUpdates(Player Player) {
+        if(!GPM.getCManager().CHECK_FOR_UPDATE) return;
+        if(!GPM.getPManager().hasPermission(Player, "Update")) return;
+        checkVersion();
+        if(latestVersion) return;
+        GPM.getMManager().sendMessage(Player, "Plugin.plugin-update", "%Name%", GSitMain.NAME, "%NewVersion%", spigotVersion, "%Version%", GPM.getDescription().getVersion(), "%Path%", GPM.getDescription().getWebsite());
+    }
 
     private void getSpigotVersion(final Consumer<String> VersionConsumer) {
-        if(Integer.parseInt(GPM.RESOURCE) == 0) {
-            VersionConsumer.accept(null);
-            return;
-        }
         GPM.getTManager().run(() -> {
-            try (InputStream inputStream = new URL("https://api.spigotmc.org/legacy/update.php?resource=" + GPM.RESOURCE).openStream();
+            try(InputStream inputStream = new URL("https://api.spigotmc.org/legacy/update.php?resource=" + GPM.RESOURCE).openStream();
                  Scanner scanner = new Scanner(inputStream)) {
                 if(scanner.hasNext() && VersionConsumer != null) VersionConsumer.accept(scanner.next());
-            } catch (IOException e) { e.printStackTrace(); }
+            } catch (IOException e) {
+                if(e.getMessage().contains("50")) return;
+                e.printStackTrace();
+            }
         }, false);
     }
 
     private void checkVersion() {
+        LocalDate today = LocalDate.now();
+        if(lastCheck != null && lastCheck.equals(today)) return;
+        lastCheck = today;
         try {
             getSpigotVersion(sVersion -> {
                 spigotVersion = sVersion;

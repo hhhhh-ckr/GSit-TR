@@ -18,13 +18,11 @@ public class GCrawlCommand implements CommandExecutor {
     @Override
     public boolean onCommand(@NotNull CommandSender Sender, @NotNull Command Command, @NotNull String Label, String[] Args) {
 
-        if(!(Sender instanceof Player)) {
+        if(!(Sender instanceof Player player)) {
 
             GPM.getMManager().sendMessage(Sender, "Messages.command-sender-error");
             return true;
         }
-
-        Player player = (Player) Sender;
 
         if(Args.length == 0) {
 
@@ -36,10 +34,7 @@ public class GCrawlCommand implements CommandExecutor {
 
             if(!GPM.getCrawlManager().isAvailable()) {
 
-                String v = Bukkit.getServer().getClass().getPackage().getName();
-                v = v.substring(v.lastIndexOf('.') + 1);
-
-                GPM.getMManager().sendMessage(Sender, "Messages.command-version-error", "%Version%", v);
+                GPM.getMManager().sendMessage(Sender, "Messages.command-version-error", "%Version%", GPM.getSVManager().getServerVersion());
                 return true;
             }
 

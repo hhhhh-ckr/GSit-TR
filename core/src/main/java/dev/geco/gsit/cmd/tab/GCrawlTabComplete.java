@@ -18,34 +18,28 @@ public class GCrawlTabComplete implements TabCompleter {
     @Override
     public List<String> onTabComplete(@NotNull CommandSender Sender, @NotNull Command Command, @NotNull String Label, String[] Args) {
 
+        if(!GPM.getCManager().C_DOUBLE_SNEAK || !(Sender instanceof Player)) return new ArrayList<>();
+
         List<String> complete = new ArrayList<>(), completeStarted = new ArrayList<>();
 
-        if(Sender instanceof Player) {
+        if(Args.length == 1) {
 
-            if(Args.length == 1) {
+            if(GPM.getPManager().hasPermission(Sender, "CrawlToggle", "Crawl.*")) complete.add("toggle");
 
-                if(GPM.getPManager().hasPermission(Sender, "CrawlToggle", "Crawl.*") && GPM.getCManager().C_DOUBLE_SNEAK) complete.add("toggle");
+            if(!Args[Args.length - 1].isEmpty()) {
+                for(String entry : complete) if(entry.toLowerCase().startsWith(Args[Args.length - 1].toLowerCase())) completeStarted.add(entry);
+                complete.clear();
+            }
+        } else if(Args.length == 2) {
 
-                if(!Args[Args.length - 1].isEmpty()) {
+            if(GPM.getPManager().hasPermission(Sender, "CrawlToggle", "Crawl.*") && Args[0].equalsIgnoreCase("toggle")) {
+                complete.add("on");
+                complete.add("off");
+            }
 
-                    for(String entry : complete) if(entry.toLowerCase().startsWith(Args[Args.length - 1].toLowerCase())) completeStarted.add(entry);
-
-                    complete.clear();
-                }
-            } else if(Args.length == 2) {
-
-                if(GPM.getPManager().hasPermission(Sender, "CrawlToggle", "Crawl.*") && Args[0].equalsIgnoreCase("toggle") && GPM.getCManager().C_DOUBLE_SNEAK) {
-
-                    complete.add("on");
-                    complete.add("off");
-                }
-
-                if(!Args[Args.length - 1].isEmpty()) {
-
-                    for(String entry : complete) if(entry.toLowerCase().startsWith(Args[Args.length - 1].toLowerCase())) completeStarted.add(entry);
-
-                    complete.clear();
-                }
+            if(!Args[Args.length - 1].isEmpty()) {
+                for(String entry : complete) if(entry.toLowerCase().startsWith(Args[Args.length - 1].toLowerCase())) completeStarted.add(entry);
+                complete.clear();
             }
         }
 

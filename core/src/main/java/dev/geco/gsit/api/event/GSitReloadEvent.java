@@ -7,9 +7,10 @@ import org.bukkit.event.server.*;
 
 import dev.geco.gsit.GSitMain;
 
-public class GSitReloadEvent extends PluginEvent {
+public class GSitReloadEvent extends PluginEvent implements Cancellable {
 
     private static final HandlerList HANDLERS = new HandlerList();
+    private boolean cancel = false;
 
     private final GSitMain GPM;
 
@@ -23,5 +24,9 @@ public class GSitReloadEvent extends PluginEvent {
     public @NotNull HandlerList getHandlers() { return HANDLERS; }
 
     public static HandlerList getHandlerList() { return HANDLERS; }
+
+    public boolean isCancelled() { return cancel; }
+
+    public void setCancelled(boolean Cancel) { cancel = Cancel; }
 
 }
